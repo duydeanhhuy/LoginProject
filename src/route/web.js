@@ -1,0 +1,14 @@
+import express from 'express'
+import homeController from '../controller/homeController'
+
+let router = express.Router()
+
+let initWebRouters = (app) => {
+  router.get('/', homeController.getHomePage)
+  router.get(`/home`, homeController.getHome)
+  router.post(`/api/register`, homeController.postRegister)
+  router.post(`/api/login`, homeController.loginUser)
+  return app.use('/', router) // app của chúng ta sẽ bắt đầu = dấu / và phải sử dụng tất cả các file router cta khai báo
+}
+
+module.exports = initWebRouters
