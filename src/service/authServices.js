@@ -147,7 +147,6 @@ const reFreshTokenServices = (refreshToken,res) => {
         try{
             let userData = {}
             if(!refreshToken){
-                // chưa đăng nhập
                 resolve({
                     errCode: 1,
                     errMessage: `You're not authenticated~~~`
@@ -155,14 +154,13 @@ const reFreshTokenServices = (refreshToken,res) => {
             }else if(!refreshTokenArr.includes(refreshToken)){
                 resolve({
                     errCode: 1,
-                    errMessage: `Refresh token is not valid` // hết hạn 
+                    errMessage: `Refresh token is not valid`  
                 })
             }
             jwt.verify(refreshToken,process.env.JWT_REFRESH_TOKEN, (err,user)=>{
                 if(err){
                     console.log(`got err: `,err)
                 }
-                // loại cái cũ đi lấy cái mới
                 refreshTokenArr = refreshTokenArr.filter(token => token !== refreshToken)
 
                 let newAccessToken = generateAccessToken(user)

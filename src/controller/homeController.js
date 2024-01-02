@@ -1,5 +1,3 @@
-import db from '../models/index.js'
-import bcrypt from 'bcryptjs'
 import authServices from '../service/authServices.js'
 let jwt = require('jsonwebtoken');
 let getHomePage = async (req, res) => {
@@ -18,26 +16,6 @@ let loginUser = async (req,res) => {
     let password = req.body.password
     let response = await authServices.LoginServices(email,password,res)
     res.status(200).json(response)
-}
-const generateAccessToken =(user)=>{
-    return jwt.sign({
-                        id: user.id,
-                        admin: user.admin
-                    },
-                    process.env.JWT_ACCESS_TOKEN,
-                    {expiresIn: "30s"}
-            )
-        
-}
-const generateRefreshToken =(user)=>{
-    return jwt.sign({
-                        id: user.id,
-                        admin: user.admin
-                    },
-                    process.env.JWT_REFRESH_TOKEN,
-                    {expiresIn: "365d"}
-            )
-        
 }
 let reqRefreshToken = async (req,res) => {
     // Take refresh token from user

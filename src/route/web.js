@@ -10,14 +10,13 @@ let initWebRouters = (app) => {
   router.post(`/api/register`, homeController.postRegister)
   router.post(`/api/login`, homeController.loginUser)
   router.post(`/api/logout`, homeController.logoutUser)
-  router.get(`/get-user`, middlewareController.verifyToken, userController.getAllUser) // người muốn login thực hiện cái 
+  router.get(`/get-user`, middlewareController.verifyToken, userController.getAllUser)
 
   router.delete(`/delete-user/:id`, middlewareController.verifyTokenAndAdminAuth, userController.deleteUser)
   router.put(`/edit-user/:id`, userController.editUser)
 
   router.post(`/refreshToken`, homeController.reqRefreshToken)
-  return app.use('/', router) // app của chúng ta sẽ bắt đầu = dấu / và phải sử dụng tất cả các file router cta khai báo
-
+  return app.use('/', router)
 }
 
 module.exports = initWebRouters
