@@ -1,73 +1,59 @@
 import db from '../models/index.js'
 import bcrypt from 'bcryptjs'
+import authServices from '../service/authServices.js'
+let jwt = require('jsonwebtoken');
 let getHomePage = async (req, res) => {
-    try{
-        let data = await db.User.findAll({
-            raw:true
-        });
-        console.log('----------------------')
-        console.log(data)
-        console.log(`----------------------`)
-    }catch(e){
-        console.log(e)
-    }
-}
-let getHome = (req, res) => {
-  return res.render(`homePage.ejs`)
+    let data = await authServices.getHomePageServices()
+    return res.status(200).json(data)
 }
 
+let refreshTokenArr = []
 let postRegister = async (req,res) => {
-    try{
-        console.log(`check req: `,req.body)
-        let data = req.body
-        let salt = bcrypt.genSaltSync(10);
-        let hashPassword = bcrypt.hashSync(data.password,salt)
-        let userRegister =  await db.User.create({
-            username: data.username,
-            email: data.email,
-            password: hashPassword
-        })
-        return res.status(200).json({
-            errCode: 0,
-            errMessage: `Created`,
-            
-        })
-    }catch(e){
-        return res.status(500).json({
-            message:`Error`
-        })
-    }
+    let userRegister = req.body
+    let data = await authServices.postRegisterServices(userRegister)
+    return res.status(200).json(data)
 }
 let loginUser = async (req,res) => {
-    try{
-        const user = await db.User.findOne({
-            where : {email: req.body.email}
-        })
-        if(!user){
-            return res.status(404).json({
-                errCode: 1,
-                errMessage: `Wrong email or email doesn't exist`
-            })
-        }
-        let validPassword = bcrypt.compareSync(req.body.password, user.password);
-        if(user && validPassword === true){
-            return res.status(200).json({
-                errCode: 0,
-                errMessage: `You're correct~~`
-            })
-        }else{
-            return res.status(200).json({
-                errCode:1,
-                errMessage:'Wrong Password'
-            })
-        }
-    }catch(e){
-        res.status(500).json(e)
-    }
+    let email = req.body.email
+    let password = req.body.password
+    let response = await authServices.LoginServices(email,password,res)
+    res.status(200).json(response)
+}
+const generateAccessToken =(user)=>{
+    return jwt.sign({
+                        id: user.id,
+                        admin: user.admin
+                    },
+                    process.env.JWT_ACCESS_TOKEN,
+                    {expiresIn: "30s"}
+            )
+        
+}
+const generateRefreshToken =(user)=>{
+    return jwt.sign({
+                        id: user.id,
+                        admin: user.admin
+                    },
+                    process.env.JWT_REFRESH_TOKEN,
+                    {expiresIn: "365d"}
+            )
+        
+}
+let reqRefreshToken = async (req,res) => {
+    // Take refresh token from user
+    let refreshToken = req.cookies.refreshToken
+    console.log('refresh_token', refreshToken)
+    let data = await authServices.reFreshTokenServices(refreshToken,res)
+    return res.status(200).json(data)
+}
+const logoutUser = async (req, res)=>{
+    let data = await authServices.logOutServices(req,res)
+    return res.status(200).json(data)
 }
 module.exports = {
   getHomePage: getHomePage,
-  getHome: getHome,
   postRegister:postRegister,
-  loginUser:loginUser
+  loginUser:loginUser,
+  reqRefreshToken: reqRefreshToken,
+  logoutUser: logoutUser
 }

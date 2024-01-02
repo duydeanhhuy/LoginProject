@@ -1,47 +1,43 @@
 import db from "../models"
+import userServices from '../service/userServices.js'
 const getAllUser =  async (req,res) => {
+    let data = await userServices.getAllUserServices()
+    return res.status(200).json(data)
+}
+const deleteUser = async (req,res) => {
+    let id = req.params.id
+    let data = await userServices.deleteUserServices(id)
+    return res.status(200).json(data)
+}
+const editUser = async (req,res)=> {
     try{
-        const user = await db.User.findAll({
-            raw: true
-        });
-        if(user){
-            return res.status(200).json({
-            errCode: 0,
-            errMessage: `All User`,
-            listUser: user
+        // seek user
+        let user = await db.User.findOne({
+            where: {id: req.params.id}
         })
+        if(!user){
+            return res.status(200).json({
+                errCode: 1,
+                errMessage: `User doesn't exist~`
+            })
+        }else if(user){
+            console.log(`check req.body.email: `,req.body.email)
+            user.email = req.body.email
+            user.username = req.body.username
+            console.log(`check user1: `,user)
+            await user.save()
+            return res.status(200).json({
+                errCode: 0,
+                errMessage: `Edited~~`,
+                userEdit: user
+            })
         }
-        
     }catch(e){
         return res.status(500).json(e)
     }
 }
-const deleteUser = async (req,res) => {
-    try{
-        let user = await db.User.findOne({
-            where: {id: req.params.id}
-        })
-        console.log(`check user id: `, req.params)
-        if(user){
-            await user.destroy();
-            return res.status(200).json({
-                errCode: 0,
-                errMessage: `Deleted~~`
-            })
-        }else{
-            return res.status(404).json({
-                errCode: 1,
-                errMessage: `User not found or doesn't exist !!!`
-            })
-        }
-    }catch(e){
-        return res.status(500).json({
-            errCode:2,
-            errMessage:`Error~~~`
-        })
-    }
-}
 module.exports = {
     getAllUser: getAllUser,
-    deleteUser:deleteUser
+    deleteUser:deleteUser,
+    editUser: editUser
 }
